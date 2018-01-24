@@ -1,0 +1,7 @@
+#Requires: 
+AutoReqProv: no 
+Summary: A collection of scripts which pulls records from Infoblox for use with Nagios
+Group: Generic Group
+License: Generic License
+Vendor: Generic Vendor
+BuildArch: noarch
