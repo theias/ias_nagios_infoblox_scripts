@@ -3,6 +3,12 @@
 At IAS we use Nagios and Infoblox.  We use extensible attributes in Infoblox
 to denote which hosts should be monitored, and how, by Nagios.
 
+# Repository
+
+The current repository for this script is:
+
+* https://github.com/theias/ias_nagios_infoblox_scripts
+
 # License
 
 copyright (C) 2017 Christopher Peterson, Institute for Advanced Study
