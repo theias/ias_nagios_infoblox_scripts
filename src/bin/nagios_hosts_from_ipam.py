@@ -16,6 +16,10 @@ By default, this script will output a multi-line pretty-printed json document to
 If the first argument to the script exists, the script will attempt to write to the file
 specified by the argument.
 
+Options:
+
+    --config_file /path/to/some/config.txt
+
 # Setup / Installation
 
 This script looks for credentials in "~/.config/IAS/ipam_script_user.txt",
@@ -157,13 +161,15 @@ def write_log_error_and_exit(message, exit_value):
 def do_main_processing():
 
     parser = argparse.ArgumentParser(
-
+        description="Pulls exstible attribute data from IPAM and dumps it in json format.",
     )
      
     parser.add_argument(
         '--config_file',
+        '-c',
         type=str,
         default='~/.config/IAS/ipam_script_user.txt',
+        help='Path to config file.',
     )
 
     parser.add_argument(
