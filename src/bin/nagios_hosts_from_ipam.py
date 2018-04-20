@@ -13,12 +13,6 @@ This script pulls all of the hosts from ipam, looks for the hosts with the 'nagi
 
 By default, this script will output a multi-line pretty-printed json document to STDOUT.
 
-If the first argument to the script exists, the script will attempt to write to the file
-specified by the argument.
-
-Options:
-
-    --config_file /path/to/some/config.txt
 
 # Setup / Installation
 
@@ -158,6 +152,8 @@ def write_log_error_and_exit(message, exit_value):
     write_log_info(syslog.LOG_ERR, message)
     sys.exit(exit_value)
 
+## end logging routines
+
 def do_main_processing():
 
     parser = argparse.ArgumentParser(
@@ -200,8 +196,6 @@ def do_main_processing():
         print(json.dumps(nagios_hosts, indent=4, sort_keys=True))
     else :
         dump_nagios_hosts_json(nagios_hosts, args.output_file)
-
-## end logging routines
 
 if __name__== '__main__':
     
