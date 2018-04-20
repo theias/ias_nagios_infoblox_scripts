@@ -5,3 +5,4 @@ src/input/*
 src/output/*
 drop/*
 src/log/*
+*.swp

@@ -45,13 +45,17 @@ import  sys
 import getpass
 from	time import time, ctime
 
-def get_credentials_from_file(filename):
+def get_connect_info_from_file(filename):
     """ Reads login and pass from a file, each on their own line, in that order """
+    # The format of the file is:
+    # http://path-to-api
+    # user
+    # pass
     write_log_info('Loading credentials %s' % filename)
     f = open(filename, 'r')
     lines = f.readlines()
-    login, passwd = [l.rstrip('\n') for l in lines[:2]]
-    return login, passwd
+    api, login, passwd = [l.rstrip('\n') for l in lines[:3]]
+    return api, login, passwd
 
 def fetch_ipam_records(session, api):
     write_log_info('Fetching IPAM records.')
@@ -149,9 +153,8 @@ if __name__== '__main__':
     write_log_start()
     
     credentials_file = (os.path.expanduser("~/.config/IAS/ipam_script_user.txt"))
-    ipam_api = 'https://ipam.ias.edu/wapi/v1.6/'
     
-    username,password=get_credentials_from_file(credentials_file)
+    ipam_api, username,password=get_connect_info_from_file(credentials_file)
     ipam_session=get_ipam_session(ipam_api, username,password)
     nagios_hosts, nagios_cnames = fetch_ipam_records(ipam_session, ipam_api)
 
