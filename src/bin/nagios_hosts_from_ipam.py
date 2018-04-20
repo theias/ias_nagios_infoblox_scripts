@@ -47,6 +47,8 @@ import  socket
 import  sys
 import getpass
 from	time import time, ctime
+import argparse
+import pprint
 
 def get_connect_info_from_file(filename):
     """ Reads login and pass from a file, each on their own line, in that order """
@@ -152,13 +154,30 @@ def write_log_error_and_exit(message, exit_value):
     write_log_info(syslog.LOG_ERR, message)
     sys.exit(exit_value)
 
-## end logging routines
+def do_main_processing():
 
-if __name__== '__main__':
+    parser = argparse.ArgumentParser(
+
+    )
+     
+    parser.add_argument(
+        '--config_file',
+        type=str,
+        default='~/.config/IAS/ipam_script_user.txt',
+    )
+
+    parser.add_argument(
+        'output_file',
+        type=str,
+        nargs='?',
+    )
     
-    write_log_start()
+    args = parser.parse_args()
     
-    credentials_file = (os.path.expanduser("~/.config/IAS/ipam_script_user.txt"))
+    # pprint.pprint(args)
+    # sys.exit(0)
+    
+    credentials_file = (os.path.expanduser(args.config_file))
     
     ipam_api, username,password=get_connect_info_from_file(credentials_file)
     ipam_session=get_ipam_session(ipam_api, username,password)
@@ -170,11 +189,16 @@ if __name__== '__main__':
             1
         )
 
-    if (len(sys.argv) < 2):
+    if not args.output_file:
         write_log_info('Writing to stdout')
         print(json.dumps(nagios_hosts, indent=4, sort_keys=True))
     else :
-        output_file = sys.argv[1]
-        dump_nagios_hosts_json(nagios_hosts, output_file)
+        dump_nagios_hosts_json(nagios_hosts, args.output_file)
+
+## end logging routines
+
+if __name__== '__main__':
     
+    write_log_start()
+    do_main_processing()
     write_log_end()
