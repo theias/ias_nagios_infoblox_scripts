@@ -1,6 +1,13 @@
+ias-nagios-infoblox-scripts 2.0.0-0 noarch; urgency=low
+
+	* Ported to python 3
+	* Added API to connection info
+
+ -- Martin VanWinkle mvanwinkle@ias.edu  Fri, 20 Apr 2018 12:14:59 -0400
+
 ias-nagios-infoblox-scripts 1.0.0-0 noarch; urgency=low
 
 	* initial packaging stuff
 
- -- YOUR NAME HERE YOUR@EMAIL.HERE  Wed, 24 Jan 2018 09:23:49 -0500
+ -- Martin VanWinkle mvanwinkle@ias.edu  Wed, 24 Jan 2018 09:23:49 -0500
 
