@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """
 # Author
@@ -48,7 +48,7 @@ from	time import time, ctime
 def get_connect_info_from_file(filename):
     """ Reads login and pass from a file, each on their own line, in that order """
     # The format of the file is:
-    # http://path-to-api
+    # https://ipam-ha/wapi/v1.6/
     # user
     # pass
     write_log_info('Loading credentials %s' % filename)
@@ -67,7 +67,8 @@ def fetch_ipam_records(session, api):
             'Error code {}. Quitting.'.format(ret.status_code),
             1
         )
-    hosts = json.loads(ret.content)
+    hosts_content = ret.content
+    hosts = json.loads(hosts_content.decode('utf-8'))
 
     # Also get cname records
     write_log_info('Fetching cname records.')
@@ -78,7 +79,9 @@ def fetch_ipam_records(session, api):
             1,
         )
 
-    cnames = json.loads(ret.content)
+    # cnames = json.loads(ret.content.('utf-8'))
+    cnames_content = ret.content
+    cnames = json.loads(cnames_content.decode('utf-8'))
 
     write_log_info('Done fetching IPAM records.')
     return hosts, cnames
