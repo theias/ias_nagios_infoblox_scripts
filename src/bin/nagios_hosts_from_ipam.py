@@ -19,7 +19,10 @@ specified by the argument.
 # Setup / Installation
 
 This script looks for credentials in "~/.config/IAS/ipam_script_user.txt",
-where the first line is the user, and the second line is the password.
+where the lines are as follows:
+    https://ipam-ha/wapi/v1.6/
+    user
+    password
 
 # Dependencies
 
