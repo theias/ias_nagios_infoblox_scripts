@@ -46,126 +46,126 @@ import getpass
 from	time import time, ctime
 
 def get_credentials_from_file(filename):
-	""" Reads login and pass from a file, each on their own line, in that order """
-	write_log_info('Loading credentials %s' % filename)
-	f = open(filename, 'r')
-	lines = f.readlines()
-	login, passwd = [l.rstrip('\n') for l in lines[:2]]
-	return login, passwd
+    """ Reads login and pass from a file, each on their own line, in that order """
+    write_log_info('Loading credentials %s' % filename)
+    f = open(filename, 'r')
+    lines = f.readlines()
+    login, passwd = [l.rstrip('\n') for l in lines[:2]]
+    return login, passwd
 
 def fetch_ipam_records(session, api):
-	write_log_info('Fetching IPAM records.')
-	
-	write_log_info('Fetching host records.')
-	ret = session.get(api + 'record:host?_max_results=250000&_return_fields=extattrs,name,ipv4addrs&view=internal&*nagios_notify=1')
-	if ret.status_code != 200:
-		write_log_error_and_exit(
-			'Error code {}. Quitting.'.format(ret.status_code),
-			1
-		)
-	hosts = json.loads(ret.content)
+    write_log_info('Fetching IPAM records.')
+    
+    write_log_info('Fetching host records.')
+    ret = session.get(api + 'record:host?_max_results=250000&_return_fields=extattrs,name,ipv4addrs&view=internal&*nagios_notify=1')
+    if ret.status_code != 200:
+        write_log_error_and_exit(
+            'Error code {}. Quitting.'.format(ret.status_code),
+            1
+        )
+    hosts = json.loads(ret.content)
 
-	# Also get cname records
-	write_log_info('Fetching cname records.')
-	ret = session.get(api + 'record:cname?_max_results=250000&_return_fields=extattrs,name,dns_canonical&view=internal&*nagios_notify=1')
-	if ret.status_code != 200:
-		write_log_error_and_exit(
-			'Error code {}. Quitting.'.format(ret.status_code),
-			1,
-		)
+    # Also get cname records
+    write_log_info('Fetching cname records.')
+    ret = session.get(api + 'record:cname?_max_results=250000&_return_fields=extattrs,name,dns_canonical&view=internal&*nagios_notify=1')
+    if ret.status_code != 200:
+        write_log_error_and_exit(
+            'Error code {}. Quitting.'.format(ret.status_code),
+            1,
+        )
 
-	cnames = json.loads(ret.content)
+    cnames = json.loads(ret.content)
 
-	write_log_info('Done fetching IPAM records.')
-	return hosts, cnames
+    write_log_info('Done fetching IPAM records.')
+    return hosts, cnames
 
 def build_nagios_objects(hosts, cnames):
-	write_log_info('Building nagios objects.')
-	nagios_objects = {}
-	# Pull out all of the things from each type of record which are tagged as devicemonitors
-	# Nagios really doesn't like doing cnames by hostname, so tag them to use the ip address explicitly with use_ip
-	nagios_hosts = {} #final answer
-	for host in hosts:
-		if 'nagios_notify' in host['extattrs']:
-			host['use_ip'] = False
-			nagios_hosts[host['name']] = host
-	for cname in cnames:
-		if 'nagios_notify' in cname['extattrs']:
-			cname['use_ip'] = True
-			try:
-				cname['ipv4addr'] = socket.gethostbyname(cname['dns_canonical'])
-				nagios_hosts[cname['name']] = cname
-			except socket.gaierror:
-				print('Could not resolve cname "{}". Skipping.'.format(cname['dns_canonical']), file=sys.stderr)
-				raise
-	return nagios_hosts
+    write_log_info('Building nagios objects.')
+    nagios_objects = {}
+    # Pull out all of the things from each type of record which are tagged as devicemonitors
+    # Nagios really doesn't like doing cnames by hostname, so tag them to use the ip address explicitly with use_ip
+    nagios_hosts = {} #final answer
+    for host in hosts:
+        if 'nagios_notify' in host['extattrs']:
+            host['use_ip'] = False
+            nagios_hosts[host['name']] = host
+    for cname in cnames:
+        if 'nagios_notify' in cname['extattrs']:
+            cname['use_ip'] = True
+            try:
+                cname['ipv4addr'] = socket.gethostbyname(cname['dns_canonical'])
+                nagios_hosts[cname['name']] = cname
+            except socket.gaierror:
+                print('Could not resolve cname "{}". Skipping.'.format(cname['dns_canonical']), file=sys.stderr)
+                raise
+    return nagios_hosts
 
 def get_ipam_session(ipam_api, username,password):
-	write_log_info('Getting ipam session.')
-	session = requests.Session()
-	session.auth = (username, password)
-	try:
-		session.get(ipam_api)
-	except:
-		write_log_error_and_exit(
-			'Could not connect to Infoblox WAPI, quitting.',
-			1,	
-		)
-		
-	return session
-	
+    write_log_info('Getting ipam session.')
+    session = requests.Session()
+    session.auth = (username, password)
+    try:
+        session.get(ipam_api)
+    except:
+        write_log_error_and_exit(
+            'Could not connect to Infoblox WAPI, quitting.',
+            1,	
+        )
+        
+    return session
+    
 def dump_nagios_hosts_json(nagios_hosts, filename):
-	write_log_info('Writing to %s' % filename)
-	hosts_json = json.dumps(nagios_hosts)
-	f = open(filename, 'w')
-	f.write(hosts_json)
-	f.close()
-	write_log_info('Done writing.')
+    write_log_info('Writing to %s' % filename)
+    hosts_json = json.dumps(nagios_hosts)
+    f = open(filename, 'w')
+    f.write(hosts_json)
+    f.close()
+    write_log_info('Done writing.')
 
 ## Logging routines
 
 def write_log_start():
-	syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL3)
-	write_log_info('%s : --BEGINNING--' % sys.argv[0])
-	write_log_info('script file: %s' % os.path.realpath(__file__))
-	write_log_info('User: %s' % getpass.getuser()) 
-	write_log_info('Arguments: %s' % json.dumps(sys.argv))
+    syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL3)
+    write_log_info('%s : --BEGINNING--' % sys.argv[0])
+    write_log_info('script file: %s' % os.path.realpath(__file__))
+    write_log_info('User: %s' % getpass.getuser()) 
+    write_log_info('Arguments: %s' % json.dumps(sys.argv))
 
 def write_log_end():
-	write_log_info('%s --ENDING--' % sys.argv[0])
+    write_log_info('%s --ENDING--' % sys.argv[0])
 
 def write_log_info(message):
-	syslog.syslog(syslog.LOG_INFO, message)
+    syslog.syslog(syslog.LOG_INFO, message)
 
 def write_log_error_and_exit(message, exit_value):
-	print(message, sys.stderr)
-	write_log_info(syslog.LOG_ERR, message)
-	sys.exit(exit_value)
+    print(message, sys.stderr)
+    write_log_info(syslog.LOG_ERR, message)
+    sys.exit(exit_value)
 
 ## end logging routines
 
 if __name__== '__main__':
-	
-	write_log_start()
-	
-	credentials_file = (os.path.expanduser("~/.config/IAS/ipam_script_user.txt"))
-	ipam_api = 'https://ipam.ias.edu/wapi/v1.6/'
-	
-	username,password=get_credentials_from_file(credentials_file)
-	ipam_session=get_ipam_session(ipam_api, username,password)
-	nagios_hosts, nagios_cnames = fetch_ipam_records(ipam_session, ipam_api)
+    
+    write_log_start()
+    
+    credentials_file = (os.path.expanduser("~/.config/IAS/ipam_script_user.txt"))
+    ipam_api = 'https://ipam.ias.edu/wapi/v1.6/'
+    
+    username,password=get_credentials_from_file(credentials_file)
+    ipam_session=get_ipam_session(ipam_api, username,password)
+    nagios_hosts, nagios_cnames = fetch_ipam_records(ipam_session, ipam_api)
 
-	if not len(nagios_hosts):
-		write_log_error_and_exit(
-			'Found zero hosts tagged with the "nagios" extattr. Quitting without overwriting the current record.',
-			1
-		)
+    if not len(nagios_hosts):
+        write_log_error_and_exit(
+            'Found zero hosts tagged with the "nagios" extattr. Quitting without overwriting the current record.',
+            1
+        )
 
-	if (len(sys.argv) < 2):
-		write_log_info('Writing to stdout')
-		print(json.dumps(nagios_hosts, indent=4, sort_keys=True))
-	else :
-		output_file = sys.argv[1]
-		dump_nagios_hosts_json(nagios_hosts, output_file)
-	
-	write_log_end()
+    if (len(sys.argv) < 2):
+        write_log_info('Writing to stdout')
+        print(json.dumps(nagios_hosts, indent=4, sort_keys=True))
+    else :
+        output_file = sys.argv[1]
+        dump_nagios_hosts_json(nagios_hosts, output_file)
+    
+    write_log_end()
