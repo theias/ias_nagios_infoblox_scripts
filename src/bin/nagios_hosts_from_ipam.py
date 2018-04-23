@@ -16,11 +16,16 @@ By default, this script will output a multi-line pretty-printed json document to
 
 # Setup / Installation
 
-This script looks for credentials in "~/.config/IAS/ipam_script_user.txt",
-where the lines are as follows:
-    https://ipam-ha/wapi/v1.6/
-    user
-    password
+This script looks for credentials in "~/.config/IAS/ipam_script_user.json",
+
+  {
+  	"api_protocol" : "https",
+  	"api_uri" : "/wapi/v1.6/",
+  	"ipam_master" : "ipam-ha.example.com",
+  	"user_name" : "some_user",
+  	"password" : "some_password"
+  }
+
 
 # Dependencies
 
