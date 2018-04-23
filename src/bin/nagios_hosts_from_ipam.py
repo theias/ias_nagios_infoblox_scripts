@@ -48,6 +48,17 @@ from	time import time, ctime
 import argparse
 import pprint
 
+def load_ipam_credentials_from_file(filename):
+    data = json.load(open(filename))
+    
+    data['api_url'] = "%s://%s/%s" % (
+        data['api_protocol'],
+        data['ipam_master'],
+        data['api_uri']
+    )
+    
+    return data
+
 def get_connect_info_from_file(filename):
     """ Reads login and pass from a file, each on their own line, in that order """
     # The format of the file is:
@@ -110,12 +121,12 @@ def build_nagios_objects(hosts, cnames):
                 raise
     return nagios_hosts
 
-def get_ipam_session(ipam_api, username,password):
+def get_ipam_session(configuration):
     write_log_info('Getting ipam session.')
     session = requests.Session()
-    session.auth = (username, password)
+    session.auth = (configuration['user_name'], configuration['password'])
     try:
-        session.get(ipam_api)
+        session.get(configuration['api_url'])
     except:
         write_log_error_and_exit(
             'Could not connect to Infoblox WAPI, quitting.',
@@ -164,8 +175,8 @@ def do_main_processing():
         '--config_file',
         '-c',
         type=str,
-        default='~/.config/IAS/ipam_script_user.txt',
-        help='Path to config file.',
+        default='~/.config/IAS/ipam_script_user.json',
+        help='Path to json config file.',
     )
 
     parser.add_argument(
@@ -176,14 +187,11 @@ def do_main_processing():
     
     args = parser.parse_args()
     
-    # pprint.pprint(args)
-    # sys.exit(0)
+    configuration_file = (os.path.expanduser(args.config_file))
     
-    credentials_file = (os.path.expanduser(args.config_file))
-    
-    ipam_api, username,password=get_connect_info_from_file(credentials_file)
-    ipam_session=get_ipam_session(ipam_api, username,password)
-    nagios_hosts, nagios_cnames = fetch_ipam_records(ipam_session, ipam_api)
+    configuration = load_ipam_credentials_from_file(configuration_file)
+    ipam_session=get_ipam_session(configuration)
+    nagios_hosts, nagios_cnames = fetch_ipam_records(ipam_session, configuration['api_url'])
 
     if not len(nagios_hosts):
         write_log_error_and_exit(
