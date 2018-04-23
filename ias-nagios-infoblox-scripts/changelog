@@ -1,3 +1,10 @@
+ias-nagios-infoblox-scripts 3.0.0-0 noarch; urgency=low
+
+	* Moved to a json based configuration file
+
+ -- Martin VanWinkle mvanwinkle@ias.edu  Mon, 23 Apr 2018 09:29:41 -0400
+
+
 ias-nagios-infoblox-scripts 2.0.0-0 noarch; urgency=low
 
 	* Ported to python 3
