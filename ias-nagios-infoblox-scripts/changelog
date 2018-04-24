@@ -1,4 +1,4 @@
-ias-nagios-infoblox-scripts 3.0.0-0 noarch; urgency=low
+ias-nagios-infoblox-scripts 3.1.0-0 noarch; urgency=low
 
 	* Moved to a json based configuration file
 
