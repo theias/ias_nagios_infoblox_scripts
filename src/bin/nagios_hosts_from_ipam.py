@@ -177,7 +177,7 @@ def do_main_processing():
     )
      
     parser.add_argument(
-        '--config_file',
+        '--config-file',
         '-c',
         type=str,
         default='~/.config/IAS/ipam_script_user.json',
