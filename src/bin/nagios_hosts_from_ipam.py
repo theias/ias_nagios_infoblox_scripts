@@ -179,7 +179,7 @@ def do_main_processing():
     parser.add_argument(
         '--config-file',
         '-c',
-        type=str,
+        type=os.path.expanduser,
         default='~/.config/IAS/ipam_script_user.json',
         help='Path to json config file.',
     )
@@ -192,7 +192,7 @@ def do_main_processing():
     
     args = parser.parse_args()
     
-    configuration_file = (os.path.expanduser(args.config_file))
+    configuration_file = args.config_file
     
     configuration = load_ipam_credentials_from_file(configuration_file)
     ipam_session=get_ipam_session(configuration)
