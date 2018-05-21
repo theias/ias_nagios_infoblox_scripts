@@ -6,3 +6,4 @@ src/output/*
 drop/*
 src/log/*
 *.swp
+*.pyc
