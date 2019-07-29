@@ -22,7 +22,7 @@ This script looks for credentials in "~/.config/IAS/ipam_script_user.json",
   	"api_protocol" : "https",
   	"api_uri" : "/wapi/v1.6/",
   	"ipam_master" : "ipam-ha.example.com",
-  	"user_name" : "some_user",
+  	"username" : "some_user",
   	"password" : "some_password"
   }
 
@@ -77,10 +77,18 @@ def get_connect_info_from_file(filename):
     return api, login, passwd
 
 def fetch_ipam_records(session, api):
-    write_log_info('Fetching IPAM records.')
     
     write_log_info('Fetching host records.')
-    ret = session.get(api + 'record:host?_max_results=250000&_return_fields=extattrs,name,ipv4addrs&view=internal&*nagios_notify=1')
+    ret = session.get(
+    	api
+    	+ 'record:host?'
+    	+ '&'.join([
+			'_max_results=250000',
+			'_return_fields=extattrs,name,ipv4addrs',
+			'view=internal',
+			'*nagios_notify=1'
+		])
+	)
     if ret.status_code != 200:
         write_log_error_and_exit(
             'Error code {}. Quitting.'.format(ret.status_code),
@@ -129,7 +137,7 @@ def build_nagios_objects(hosts, cnames):
 def get_ipam_session(configuration):
     write_log_info('Getting ipam session.')
     session = requests.Session()
-    session.auth = (configuration['user_name'], configuration['password'])
+    session.auth = (configuration['username'], configuration['password'])
     try:
         session.get(configuration['api_url'])
     except:
@@ -185,7 +193,7 @@ def do_main_processing():
     )
 
     parser.add_argument(
-        'output_file',
+        '--output-file',
         type=str,
         nargs='?',
     )
