@@ -19,11 +19,11 @@ By default, this script will output a multi-line pretty-printed json document to
 This script looks for credentials in "~/.config/IAS/ipam_script_user.json",
 
   {
-  	"api_protocol" : "https",
-  	"api_uri" : "/wapi/v1.6/",
-  	"ipam_master" : "ipam-ha.example.com",
-  	"username" : "some_user",
-  	"password" : "some_password"
+    "api_protocol" : "https",
+    "api_uri" : "/wapi/v1.6/",
+    "ipam_master" : "ipam-ha.example.com",
+    "username" : "some_user",
+    "password" : "some_password"
   }
 
 
@@ -37,19 +37,19 @@ please inform us.  We'll add it to the dependencies.
 
 """
 
-from	__future__ import print_function
+from __future__ import print_function
 
 import os
 import syslog
 
-import  itertools
-import  json
-import  os
-import  requests
-import  socket
-import  sys
+import itertools
+import json
+import os
+import requests
+import socket
+import sys
 import getpass
-from	time import time, ctime
+from time import time, ctime
 import argparse
 import pprint
 
@@ -64,31 +64,19 @@ def load_ipam_credentials_from_file(filename):
     
     return data
 
-def get_connect_info_from_file(filename):
-    """ Reads login and pass from a file, each on their own line, in that order """
-    # The format of the file is:
-    # https://ipam-ha/wapi/v1.6/
-    # user
-    # pass
-    write_log_info('Loading credentials %s' % filename)
-    f = open(filename, 'r')
-    lines = f.readlines()
-    api, login, passwd = [l.rstrip('\n') for l in lines[:3]]
-    return api, login, passwd
+def fetch_ipam_records_host(session, api):
 
-def fetch_ipam_records(session, api):
-    
     write_log_info('Fetching host records.')
     ret = session.get(
-    	api
-    	+ 'record:host?'
-    	+ '&'.join([
-			'_max_results=250000',
-			'_return_fields=extattrs,name,ipv4addrs',
-			'view=internal',
-			'*nagios_notify=1'
-		])
-	)
+        api
+        + 'record:host?'
+        + '&'.join([
+            '_max_results=250000',
+            '_return_fields=extattrs,name,ipv4addrs',
+            'view=internal',
+            '*nagios_notify=1'
+        ])
+    )
     if ret.status_code != 200:
         write_log_error_and_exit(
             'Error code {}. Quitting.'.format(ret.status_code),
@@ -96,10 +84,21 @@ def fetch_ipam_records(session, api):
         )
     hosts_content = ret.content
     hosts = json.loads(hosts_content.decode('utf-8'))
+    return hosts
 
+def fetch_ipam_records_cname(session, api):
     # Also get cname records
     write_log_info('Fetching cname records.')
-    ret = session.get(api + 'record:cname?_max_results=250000&_return_fields=extattrs,name,dns_canonical&view=internal&*nagios_notify=1')
+    ret = session.get(
+        api
+        + 'record:cname?'
+        + '&'.join([
+            '_max_results=250000',
+            '_return_fields=extattrs,name,dns_canonical',
+            'view=internal',
+            '*nagios_notify=1',
+        ])
+    )
     if ret.status_code != 200:
         write_log_error_and_exit(
             'Error code {}. Quitting.'.format(ret.status_code),
@@ -109,7 +108,14 @@ def fetch_ipam_records(session, api):
     # cnames = json.loads(ret.content.('utf-8'))
     cnames_content = ret.content
     cnames = json.loads(cnames_content.decode('utf-8'))
+    return cnames
 
+def fetch_ipam_records(session, api):
+    
+    write_log_info('Fetching IPAM Records.')
+
+    hosts = fetch_ipam_records_host(session, api)
+    cnames = fetch_ipam_records_cname(session, api)
     write_log_info('Done fetching IPAM records.')
     return hosts, cnames
 
@@ -123,6 +129,7 @@ def build_nagios_objects(hosts, cnames):
         if 'nagios_notify' in host['extattrs']:
             host['use_ip'] = False
             nagios_hosts[host['name']] = host
+
     for cname in cnames:
         if 'nagios_notify' in cname['extattrs']:
             cname['use_ip'] = True
@@ -143,7 +150,7 @@ def get_ipam_session(configuration):
     except:
         write_log_error_and_exit(
             'Could not connect to Infoblox WAPI, quitting.',
-            1,	
+            1,
         )
         
     return session
@@ -204,8 +211,9 @@ def do_main_processing():
     
     configuration = load_ipam_credentials_from_file(configuration_file)
     ipam_session=get_ipam_session(configuration)
-    nagios_hosts, nagios_cnames = fetch_ipam_records(ipam_session, configuration['api_url'])
+    hosts, cnames = fetch_ipam_records(ipam_session, configuration['api_url'])
 
+    nagios_hosts = build_nagios_objects(hosts, cnames)
     if not len(nagios_hosts):
         write_log_error_and_exit(
             'Found zero hosts tagged with the "nagios" extattr. Quitting without overwriting the current record.',
