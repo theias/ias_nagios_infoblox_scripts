@@ -1,3 +1,10 @@
+ias-nagios-infoblox-scripts 3.2.0-0 noarch; urgency=low
+
+	* No longer exits when a CNAME can't be resolved
+	* Packaging re-done to align with automation standards
+
+ -- Martin VanWinkle mvanwinkle@ias.edu  Wed, 31 Jul 2019 13:11:56 -0400
+
 ias-nagios-infoblox-scripts 3.1.0-0 noarch; urgency=low
 
 	* Moved to a json based configuration file
