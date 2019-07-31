@@ -137,8 +137,10 @@ def build_nagios_objects(hosts, cnames):
                 cname['ipv4addr'] = socket.gethostbyname(cname['dns_canonical'])
                 nagios_hosts[cname['name']] = cname
             except socket.gaierror:
-                print('Could not resolve cname "{}". Skipping.'.format(cname['dns_canonical']), file=sys.stderr)
-                raise
+                write_log_warning(
+                    "Could not resolve CNAME %s . Skipping." % (cname['dns_canonical'])
+                )
+                # raise
     return nagios_hosts
 
 def get_ipam_session(configuration):
@@ -178,8 +180,12 @@ def write_log_end():
 def write_log_info(message):
     syslog.syslog(syslog.LOG_INFO, message)
 
+def write_log_warning(message):
+    print(message, file=sys.stderr)
+    syslog.syslog(syslog.LOG_WARNING, message)
+
 def write_log_error_and_exit(message, exit_value):
-    print(message, sys.stderr)
+    print(message, file=sys.stderr)
     write_log_info(syslog.LOG_ERR, message)
     sys.exit(exit_value)
 
