@@ -1,3 +1,3 @@
-# ias-nagios-infoblox-scripts
+# ias_nagios_infoblox_scripts
 
-This is the supplemental root documentation for ias-nagios-infoblox-scripts
+This is the supplemental root documentation for ias_nagios_infoblox_scripts

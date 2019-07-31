@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root@localhost
+
+# 50 6 * * * iasnetauto /opt/IAS/bin/ias-nagios-infoblox-scripts/ias-nagios-infoblox-scripts_hello.sh
