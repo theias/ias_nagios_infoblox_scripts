@@ -93,7 +93,7 @@ package-rpm
 
 * rpm-build
 
-## Export a specific tag (or just the source directory)
+## Export a specific tag (or checkout / clone the project directory)
 
 ## Supported Systems
 
