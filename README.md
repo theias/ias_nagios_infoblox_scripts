@@ -49,6 +49,36 @@ Optionally, you can build a package which will install the binaries in
 
 # Building a Package
 
+This build process uses fakeroot.
+
+## "Automation Permissions"
+
+If you don't have the users present on your system that the process uses for
+permissions, you will get a build error.
+
+You can optionally set the following environment variables for the build:
+
+* USE_AUTOMATION_PERMISSIONS - build packages to have some directories not owned
+by root
+* AUTOMATION_USER - the user that will be running the scripts (and generating
+file output)
+* AUTOMATION_GROUP - the group
+
+You can combine these things in a script (where makefile_path is set
+appropriately):
+
+```
+#!/bin/bash
+
+makefile_path="$HOME/src/git/github_theias/ias_nagios_infoblox_scripts/Makefile"
+export AUTOMATION_USER=root
+export AUTOMATION_GROUP=root
+
+fakeroot \
+make -f "$makefile_path" \
+package-rpm
+```
+
 ## Requirements
 
 ### All Systems
@@ -70,22 +100,11 @@ Optionally, you can build a package which will install the binaries in
 ### Debian packages
 
 <pre>
-  fakeroot make clean install debsetup debbuild
+fakeroot make package-deb
 </pre>
 
 ### RHEL Based Systems
 
-If you're building from a tag, and the spec file has been put
-into the tag, then you can build this on any system that has
-rpm building utilities installed, without fakeroot:
-
 <pre>
-make clean install cp-rpmspec rpmbuild
+fakeroot make package-rpm
 </pre>
-
-This will generate a new spec file every time:
-
-<pre>
-fakeroot make clean install rpmspec rpmbuild
-</pre>
-
