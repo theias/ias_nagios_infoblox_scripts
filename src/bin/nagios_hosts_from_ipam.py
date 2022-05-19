@@ -127,11 +127,23 @@ def build_nagios_objects(hosts, cnames):
     nagios_hosts = {} #final answer
     for host in hosts:
         if 'nagios_notify' in host['extattrs']:
+            if not 'nagios_devicetype' in host['extattrs']:
+                write_log_warning(
+                    "No nagios_devicetype for %s .  Skipping." % host['name']
+                )
+                continue
+
             host['use_ip'] = False
             nagios_hosts[host['name']] = host
 
     for cname in cnames:
         if 'nagios_notify' in cname['extattrs']:
+            if not 'nagios_devicetype' in cname['extattrs']:
+                write_log_warning(
+                    "No nagios_devicetype for %s .  Skipping." % cname['name']
+                )
+                continue
+
             cname['use_ip'] = True
             try:
                 cname['ipv4addr'] = socket.gethostbyname(cname['dns_canonical'])
