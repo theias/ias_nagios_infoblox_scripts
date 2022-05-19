@@ -1,3 +1,9 @@
+ias-nagios-infoblox-scripts 3.3.0-0 noarch; urgency=low
+
+	* Skips host when no nagios_devicetype has been specified.
+
+ -- Martin VanWinkle mvanwinkle@ias.edu  Thu, 19 May 2022 10:47:54 -0400
+
 ias-nagios-infoblox-scripts 3.2.0-0 noarch; urgency=low
 
 	* No longer exits when a CNAME can't be resolved
